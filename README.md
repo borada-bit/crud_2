@@ -7,8 +7,8 @@ Simple Web Service CRUD application movie database
 
 ## To launch:
 ```bash
-git clone https://github.com/borada-bit/crud.git
-cd crud
+git clone --recurse git@github.com:borada-bit/crud_2.git
+cd crud_2
 docker-compose build
 docker-compose up
 ```
