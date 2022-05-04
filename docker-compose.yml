@@ -1,0 +1,37 @@
+version: "3.9"
+
+volumes:
+  db-data:
+
+services: 
+  # mongo
+  mongo:
+    image: mongo
+    ports:
+      - 27017:27017
+    networks:
+      - "custom_network"
+
+  # application
+  web: 
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    networks:
+      - "custom_network"
+
+  # contacts service
+  contacts:
+    build:
+      context: ./contacts
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    networks:
+      - "custom_network"
+
+networks:
+  custom_network:
+    driver: bridge
