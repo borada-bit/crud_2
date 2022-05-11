@@ -28,21 +28,27 @@ def index():
 def get_all_movies():
     movies = list(my_mongo.get_all_movies())
     if request.args.get("expand"):
-        movies = movies
-        for index, item in enumerate(movies):
-            if item.get("renter_id"):
-                api_url = get_api_url()
-                api_url = api_url + str(item.get("renter_id"))
-                response = requests.get(api_url)
-                if response.status_code == 200:
-                    item["renter_data"] = response.json()
-                    item.pop("renter_id", None)
-                else:
-                    return Response(
-                        json.dumps(response.text),
-                        status=response.status_code,
-                        mimetype="application/json",
-                    )
+        alive = False
+        try:
+            requests.get(get_api_url())
+            alive = True
+        except requests.exceptions.ConnectionError as e:
+            pass
+
+        if alive:
+            for index, item in enumerate(movies):
+                if item.get("renter_id"):
+                    api_url = get_api_url()
+                    api_url = api_url + str(item.get("renter_id"))
+                    response = requests.get(api_url)
+                    if response.status_code == 200:
+                        item["renter_data"] = response.json()
+                        item.pop("renter_id", None)
+                    # if another web service does not work just return initial list of movies
+                    else:
+                        return Response(
+                            json.dumps(movies), status=200, mimetype="application/json"
+                        )
 
     return Response(json.dumps(movies), status=200, mimetype="application/json")
 
@@ -67,11 +73,19 @@ def get_movie(movie_id):
                 status=404,
                 mimetype="application/json",
             )
-        api_url = get_api_url()
-        api_url = api_url + str(renter_id)
-        response = requests.get(api_url)
-        movie["renter_data"] = response.json()
-        movie.pop("renter_id", None)
+        alive = bool
+        try:
+            requests.get(get_api_url())
+            alive = True
+        except requests.exceptions.ConnectionError as e:
+            pass
+        if alive:
+            api_url = get_api_url()
+            api_url = api_url + str(renter_id)
+            response = requests.get(api_url)
+            movie["renter_data"] = response.json()
+            movie.pop("renter_id", None)
+
         return Response(
             json.dumps(movie),
             status=response.status_code,
