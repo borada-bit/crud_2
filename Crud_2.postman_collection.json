@@ -1,0 +1,344 @@
+{
+	"info": {
+		"_postman_id": "6358fde8-8ff0-46a9-b23f-9200d6ffce74",
+		"name": "Crud_2",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get all movies",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:80/movies/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "80",
+					"path": [
+						"movies",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all movies expanded",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:80/movies?expand=true",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "80",
+					"path": [
+						"movies"
+					],
+					"query": [
+						{
+							"key": "expand",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get a certain movie",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:80/movies/{{id}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "80",
+					"path": [
+						"movies",
+						"{{id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get info about a movie's renter",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:80/movies/5/renter",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "80",
+					"path": [
+						"movies",
+						"5",
+						"renter"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get a certain movie expanded",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:80/movies/3?expand=true",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "80",
+					"path": [
+						"movies",
+						"3"
+					],
+					"query": [
+						{
+							"key": "expand",
+							"value": "true",
+							"description": "labas"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add a movie",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"title\": \"Avengers\",\n\t\"year\": 2012,\n\t\"genre\": \"Action\",\n\t\"director\": \"Josh Whedon\",\n\t\"runtime\": 143,\n\t\"comment\": \"Amazing action movie!\",\n\t\"renter_id\": 12345\n}"
+				},
+				"url": {
+					"raw": "http://localhost:80/movies/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "80",
+					"path": [
+						"movies",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add a movie with a renter(composition) Copy",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"title\": \"Sonic 2\",\n\t\"year\": 2022,\n\t\"genre\": \"Action\",\n\t\"director\": \"Jeff Fowler\",\n\t\"runtime\": 122,\n\t\"comment\": \"Jim Carrey is the GOAT\",\n\t\"renter_data\": {\n        \"id\": 43682,\n        \"name\": \"Tails\",\n        \"surname\": \"Hedgehog\",\n        \"number\": \"+37061212555\",\n        \"email\": \"tails@mail.com\"\n    }\n}"
+				},
+				"url": {
+					"raw": "http://localhost:80/movies/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "80",
+					"path": [
+						"movies",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "No valid renter exists in another web service",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"title\": \"Sonic 2\",\n\t\"year\": 2022,\n\t\"genre\": \"Action\",\n\t\"director\": \"Jeff Fowler\",\n\t\"runtime\": 122,\n\t\"comment\": \"Jim Carrey is the GOAT\",\n\t\"renter_id\": 1\n}"
+				},
+				"url": {
+					"raw": "http://localhost:80/movies/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "80",
+					"path": [
+						"movies",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add only renter to movie",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n        \"id\": 63633,\n        \"name\": \"Shadow\",\n        \"surname\": \"Hedgehog\",\n        \"number\": \"+37061212777\",\n        \"email\": \"shadow@mail.com\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:80/movies/2/renter",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "80",
+					"path": [
+						"movies",
+						"2",
+						"renter"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update movie",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"Uncharted\",\n    \"year\": 2022,\n    \"genre\": \"adventure\",\n    \"director\": \"Ruben Fleischer\",\n    \"runtime\": 116\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:80/movies/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "80",
+					"path": [
+						"movies",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update movie (composition)",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"Doctor Strange\",\n    \"year\": 2016,\n    \"genre\": \"action\",\n    \"director\": \"Scott Derrickson\",\n    \"runtime\": 115,\n    \"renter_data\": {\n        \"id\": 82546,\n        \"name\": \"Knuckles\",\n        \"surname\": \"Hedgehog\",\n        \"number\": \"+37061212666\",\n        \"email\": \"knuckles@mail.com\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:80/movies/5",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "80",
+					"path": [
+						"movies",
+						"5"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete movie data(and renter if exists)",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:80/movies/3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "80",
+					"path": [
+						"movies",
+						"3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete movie's renter",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:80/movies/5/renter",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "80",
+					"path": [
+						"movies",
+						"5",
+						"renter"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "id",
+			"value": "3"
+		}
+	]
+}
