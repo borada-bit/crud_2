@@ -126,7 +126,6 @@ def get_movie_renter(movie_id):
         )
 
 
-# TODO check if added renter_id exists in another web service
 @app.route("/movies/", methods=["POST"])
 def create_movie():
     try:
@@ -151,6 +150,23 @@ def create_movie():
             if movie_data["id"] == obj["id"]:
                 continue
         break
+
+    # CHECK if renter with this id exists in another web serice
+    if movie_data.get("renter_id"):
+        renter_id = movie_data.get("renter_id")
+        api_url = get_api_url()
+        api_url = api_url + str(renter_id)
+        response = requests.get(api_url)
+
+        if response.status_code != 200:
+            return Response(
+                json.dumps(
+                    {"Error": f"No such renter with this id: {renter_id} exists"}
+                ),
+                # 422 UNPROCESSABLE ENTITY
+                status=422,
+                mimetype="application/json",
+            )
 
     if movie_data.get("renter_data"):
         renter_data = movie_data.get("renter_data").copy()
