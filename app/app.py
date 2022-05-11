@@ -26,8 +26,25 @@ def index():
 
 @app.route("/movies/", methods=["GET"])
 def get_all_movies():
-    movies = my_mongo.get_all_movies()
-    return Response(json.dumps(list(movies)), status=200, mimetype="application/json")
+    movies = list(my_mongo.get_all_movies())
+    if request.args.get("expand"):
+        movies = movies
+        for index, item in enumerate(movies):
+            if item.get("renter_id"):
+                api_url = get_api_url()
+                api_url = api_url + str(item.get("renter_id"))
+                response = requests.get(api_url)
+                if response.status_code == 200:
+                    item["renter_data"] = response.json()
+                    item.pop("renter_id", None)
+                else:
+                    return Response(
+                        json.dumps(response.text),
+                        status=response.status_code,
+                        mimetype="application/json",
+                    )
+
+    return Response(json.dumps(movies), status=200, mimetype="application/json")
 
 
 @app.route("/movies/<int:movie_id>", methods=["GET"])
