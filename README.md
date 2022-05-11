@@ -20,13 +20,13 @@ Test the API with [Postman](https://www.postman.com/).
 
 ```JSON
 [ 
-    "id": 1,
-    "title": "Dune",
-    "year": 2021,
-    "genre": "sci-fi",
-    "director": "Dennis Villenueve",
-    "runtime": 150,
-    "comment": "Amazing sci-fi movie!"
+    "id": 3,
+    "title": "Forrest Gump",
+    "year": 1994,
+    "genre": "drama",
+    "director": "Robert Zemeckis",
+    "runtime": 144,
+    "renter_id": 12345
 ]
 ```
 
