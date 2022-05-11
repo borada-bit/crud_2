@@ -20,15 +20,33 @@ Test the API with [Postman](https://www.postman.com/).
 
 ```JSON
 [ 
-	{
-	"title": "Avengers",
-	"year": 2012,
-	"genre": "Action",
-	"director": "Josh Whedon",
-	"runtime": 143,
-	"comment": "Amazing action movie!",
-	"renter_id": 12345
-	}
+    "id": 1,
+    "title": "Dune",
+    "year": 2021,
+    "genre": "sci-fi",
+    "director": "Dennis Villenueve",
+    "runtime": 150,
+    "comment": "Amazing sci-fi movie!"
+]
+```
+
+### Example JSON expanded
+
+```JSON
+[ 
+    "id": 3,
+    "title": "Forrest Gump",
+    "year": 1994,
+    "genre": "drama",
+    "director": "Robert Zemeckis",
+    "runtime": 144,
+    "renter_data": {
+        "id": 12345,
+        "surname": "Vangogh",
+        "name": "Jake",
+        "number": "+37065841738",
+        "email": "jakevan@mail.com"
+    }
 ]
 ```
 
