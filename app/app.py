@@ -126,7 +126,7 @@ def get_movie_renter(movie_id):
         )
 
 
-# TODO check if added renter_id exists in another web service?
+# TODO check if added renter_id exists in another web service
 @app.route("/movies/", methods=["POST"])
 def create_movie():
     try:
@@ -139,7 +139,6 @@ def create_movie():
             status=422,
             mimetype="application/json",
         )
-    # movie_data = json.loads(request.data)
 
     # assign random id
     while True:
@@ -152,6 +151,19 @@ def create_movie():
             if movie_data["id"] == obj["id"]:
                 continue
         break
+
+    if movie_data.get("renter_data"):
+        renter_data = movie_data.get("renter_data").copy()
+        movie_data["renter_id"] = renter_data.get("id")
+        movie_data.pop("renter_data")
+        api_url = get_api_url()
+        r = requests.post(api_url, json=renter_data)
+        if r.status_code != 201:
+            return Response(
+                r.text,
+                status=r.status_code,
+                mimetype="application/json",
+            )
 
     ## ALL CHECKS HAVE PASSED
     # passing copy of movie data so it does not add mongo _id field and can return response with json dumps
