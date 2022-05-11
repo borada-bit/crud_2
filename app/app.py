@@ -26,8 +26,31 @@ def index():
 
 @app.route("/movies/", methods=["GET"])
 def get_all_movies():
-    movies = my_mongo.get_all_movies()
-    return Response(json.dumps(list(movies)), status=200, mimetype="application/json")
+    movies = list(my_mongo.get_all_movies())
+    if request.args.get("expand"):
+        alive = False
+        try:
+            requests.get(get_api_url())
+            alive = True
+        except requests.exceptions.ConnectionError as e:
+            pass
+
+        if alive:
+            for index, item in enumerate(movies):
+                if item.get("renter_id"):
+                    api_url = get_api_url()
+                    api_url = api_url + str(item.get("renter_id"))
+                    response = requests.get(api_url)
+                    if response.status_code == 200:
+                        item["renter_data"] = response.json()
+                        item.pop("renter_id", None)
+                    # if another web service does not work just return initial list of movies
+                    else:
+                        return Response(
+                            json.dumps(movies), status=200, mimetype="application/json"
+                        )
+
+    return Response(json.dumps(movies), status=200, mimetype="application/json")
 
 
 @app.route("/movies/<int:movie_id>", methods=["GET"])
@@ -40,8 +63,37 @@ def get_movie(movie_id):
             status=404,
             mimetype="application/json",
         )
-    # 200 OK
-    return Response(json.dumps(movie), status=200, mimetype="application/json")
+
+    if request.args.get("expand"):
+        # if expand param is true need to return info about renter
+        renter_id = movie["renter_id"]
+        if renter_id is None:
+            return Response(
+                json.dumps({"Error": "This movie does not have a renter"}),
+                status=404,
+                mimetype="application/json",
+            )
+        alive = bool
+        try:
+            requests.get(get_api_url())
+            alive = True
+        except requests.exceptions.ConnectionError as e:
+            pass
+        if alive:
+            api_url = get_api_url()
+            api_url = api_url + str(renter_id)
+            response = requests.get(api_url)
+            movie["renter_data"] = response.json()
+            movie.pop("renter_id", None)
+
+        return Response(
+            json.dumps(movie),
+            status=response.status_code,
+            mimetype="application/json",
+        )
+    else:
+        # 200 OK
+        return Response(json.dumps(movie), status=200, mimetype="application/json")
 
 
 @app.route("/movies/<int:movie_id>/renter", methods=["GET"])
@@ -74,7 +126,6 @@ def get_movie_renter(movie_id):
         )
 
 
-# TODO check if added renter_id exists in another web service?
 @app.route("/movies/", methods=["POST"])
 def create_movie():
     try:
@@ -87,7 +138,6 @@ def create_movie():
             status=422,
             mimetype="application/json",
         )
-    # movie_data = json.loads(request.data)
 
     # assign random id
     while True:
@@ -100,6 +150,36 @@ def create_movie():
             if movie_data["id"] == obj["id"]:
                 continue
         break
+
+    # CHECK if renter with this id exists in another web serice
+    if movie_data.get("renter_id"):
+        renter_id = movie_data.get("renter_id")
+        api_url = get_api_url()
+        api_url = api_url + str(renter_id)
+        response = requests.get(api_url)
+
+        if response.status_code != 200:
+            return Response(
+                json.dumps(
+                    {"Error": f"No such renter with this id: {renter_id} exists"}
+                ),
+                # 422 UNPROCESSABLE ENTITY
+                status=422,
+                mimetype="application/json",
+            )
+
+    if movie_data.get("renter_data"):
+        renter_data = movie_data.get("renter_data").copy()
+        movie_data["renter_id"] = renter_data.get("id")
+        movie_data.pop("renter_data")
+        api_url = get_api_url()
+        r = requests.post(api_url, json=renter_data)
+        if r.status_code != 201:
+            return Response(
+                r.text,
+                status=r.status_code,
+                mimetype="application/json",
+            )
 
     ## ALL CHECKS HAVE PASSED
     # passing copy of movie data so it does not add mongo _id field and can return response with json dumps
@@ -186,12 +266,12 @@ def add_renter(movie_id: int):
 # 200 status code netinka paupdatinus
 # BUG veikia kaip patch, padavus tik kelis field juos updatina, reikia patikrint ar paduotas visas json objektas
 # TODO check if updated renter_id exists in another webservice?
+# transaction if put succeeds in another web service but not in ours?
 @app.route("/movies/<int:movie_id>", methods=["PUT"])
 def update_movie(movie_id):
     # CHECK IF JSON IS OF GOOD FORMAT
     try:
         new_movie_data = json.loads(request.data)
-    # bad format of json
     except json.decoder.JSONDecodeError:
         # 422 UNPROCESSABLE ENTITY
         return Response(
@@ -199,16 +279,38 @@ def update_movie(movie_id):
             status=422,
             mimetype="application/json",
         )
-    # new_movie_data = json.loads(request.data)
+
+    # UPDATING renter data in another web service if passed renter_data in json
+    if new_movie_data.get("renter_data"):
+        renter_data = new_movie_data.get("renter_data").copy()
+        new_movie_data["renter_id"] = renter_data.get("id")
+        new_movie_data.pop("renter_data")
+        api_url = get_api_url() + str(renter_data.get("id"))
+        r = requests.put(api_url, json=renter_data)
+        if r.status_code != 200:
+            if r.status_code == 404:
+                # if no renter exists just post?
+                r = requests.post(get_api_url(), json=renter_data)
+                if r.status_code != 201:
+                    return Response(
+                        r.text,
+                        status=r.status_code,
+                        mimetype="application/json",
+                    )
+            else:
+                return Response(
+                    r.text,
+                    status=r.status_code,
+                    mimetype="application/json",
+                )
 
     new_movie_data["id"] = movie_id
-    # GET OLD MOVIE DATA, copy if it does new movie json is bad?
-    # old_movie_data = my_mongo.get_movie(movie_id)
     old_movie_data = {}
-    # NO MOVIE WITH SUCH ID EXISTS YET, SO PERFORMING MONGO_ADD INSTEAD OF MONGO UPDATE
 
     updated = bool
+    # IF no such id exists yet, perform simple add
     if my_mongo.get_movie(movie_id) is None:
+        # ADDING
         # giving copy to this one so that response has no _id field
         updated = my_mongo.add_movie(new_movie_data.copy())
     else:
@@ -398,12 +500,22 @@ def delete_movie_renter(movie_id):
         api_url = api_url + str(renter_id)
         renter_data = requests.get(api_url)
         r = requests.delete(api_url)
-        return Response(
-            # r.text = "contact deleted successfuly"
-            json.dumps({"Status": r.text, "Renter_data": json.loads(renter_data.text)}),
-            status=r.status_code,
-            mimetype="application/json",
-        )
+        if r.status_code == 200:
+            cursor.pop("renter_id")
+            return Response(
+                # r.text = "contact deleted successfuly"
+                json.dumps(
+                    {"Status": r.text, "Renter_data": json.loads(renter_data.text)}
+                ),
+                status=r.status_code,
+                mimetype="application/json",
+            )
+        else:
+            return Response(
+                r.text,
+                status=r.status_code,
+                mimetype="application/json",
+            )
 
     else:
         # 404 NOT FOUND
