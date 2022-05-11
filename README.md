@@ -26,7 +26,7 @@ Test the API with [Postman](https://www.postman.com/).
 	"genre": "Action",
 	"director": "Josh Whedon",
 	"runtime": 143,
-	"comment": "Amazing action movie!"
+	"comment": "Amazing action movie!",
 	"renter_id": 12345
 	}
 ]
