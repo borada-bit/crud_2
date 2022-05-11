@@ -40,8 +40,29 @@ def get_movie(movie_id):
             status=404,
             mimetype="application/json",
         )
-    # 200 OK
-    return Response(json.dumps(movie), status=200, mimetype="application/json")
+
+    if request.args.get("expand"):
+        # if expand param is true need to return info about renter
+        renter_id = movie["renter_id"]
+        if renter_id is None:
+            return Response(
+                json.dumps({"Error": "This movie does not have a renter"}),
+                status=404,
+                mimetype="application/json",
+            )
+        api_url = get_api_url()
+        api_url = api_url + str(renter_id)
+        response = requests.get(api_url)
+        movie["renter_data"] = response.json()
+        movie.pop("renter_id", None)
+        return Response(
+            json.dumps(movie),
+            status=response.status_code,
+            mimetype="application/json",
+        )
+    else:
+        # 200 OK
+        return Response(json.dumps(movie), status=200, mimetype="application/json")
 
 
 @app.route("/movies/<int:movie_id>/renter", methods=["GET"])
