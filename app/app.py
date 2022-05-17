@@ -33,7 +33,8 @@ def get_all_movies():
             requests.get(get_api_url())
             alive = True
         except requests.exceptions.ConnectionError as e:
-            pass
+            # if another web service returns error just return initial list of movies
+            return Response(json.dumps(movies), status=200, mimetype="application/json")
 
         if alive:
             for index, item in enumerate(movies):
@@ -44,11 +45,6 @@ def get_all_movies():
                     if response.status_code == 200:
                         item["renter_data"] = response.json()
                         item.pop("renter_id", None)
-                    # if another web service does not work just return initial list of movies
-                    else:
-                        return Response(
-                            json.dumps(movies), status=200, mimetype="application/json"
-                        )
 
     return Response(json.dumps(movies), status=200, mimetype="application/json")
 
