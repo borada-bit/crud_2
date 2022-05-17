@@ -4,6 +4,7 @@ Simple Web Service CRUD application movie database
 ## Requirements:
 * docker
 * git
+* docker-compose
 
 ## To launch:
 ```bash
